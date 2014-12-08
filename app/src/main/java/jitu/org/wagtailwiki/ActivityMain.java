@@ -32,7 +32,15 @@ public class ActivityMain extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getTextView().setOnTouchListener(new TouchListener(this));
-        showWelcome();
+    }
+
+    protected void onResume() {
+        super.onResume();
+        if (currentFile == null) {
+            showWelcome();
+        } else {
+            showFile(currentFile);
+        }
     }
 
     TextView getTextView() {
