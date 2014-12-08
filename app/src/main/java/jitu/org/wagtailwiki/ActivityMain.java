@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -50,6 +51,7 @@ public class ActivityMain extends Activity {
     private void showWelcome() {
         InputStream is = getResources().openRawResource(R.raw.welcome);
         showContent(is);
+        updateEditButton();
     }
 
     private void showContent(InputStream stream) {
@@ -115,9 +117,15 @@ public class ActivityMain extends Activity {
             InputStream is = new FileInputStream(file);
             showContent(is);
             currentFile = file;
+            updateEditButton();
         } catch (IOException e) {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private void updateEditButton() {
+        Button button = (Button) findViewById(R.id.button_edit);
+        button.setEnabled(currentFile != null);
     }
 
     void openLink(String link) {
