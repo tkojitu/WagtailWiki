@@ -21,11 +21,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Vector;
 
 public class ActivityMain extends Activity {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
 
-    private File currentFile;
+    private Vector<File> history = new Vector<File>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,11 +37,7 @@ public class ActivityMain extends Activity {
 
     protected void onResume() {
         super.onResume();
-        if (currentFile == null) {
-            showWelcome();
-        } else {
-            showFile(currentFile);
-        }
+        updateScreen();
     }
 
     TextView getTextView() {
@@ -50,7 +47,6 @@ public class ActivityMain extends Activity {
     private void showWelcome() {
         InputStream is = getResources().openRawResource(R.raw.welcome);
         showContent(is);
-        updateScreen();
     }
 
     private void showContent(InputStream stream) {
@@ -75,12 +71,12 @@ public class ActivityMain extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-        case R.id.menu_open:
-            return onOpen();
-        case R.id.action_settings:
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
+            case R.id.menu_open:
+                return onOpen();
+            case R.id.action_settings:
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -98,14 +94,14 @@ public class ActivityMain extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-        case REQUEST_ACTION_GET_CONTENT:
-            if (resultCode == RESULT_OK) {
-                String path = data.getData().getPath();
-                showFile(new File(path));
-            }
-            break;
-        default:
-            break;
+            case REQUEST_ACTION_GET_CONTENT:
+                if (resultCode == RESULT_OK) {
+                    String path = data.getData().getPath();
+                    showFile(new File(path));
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -113,45 +109,60 @@ public class ActivityMain extends Activity {
         try {
             InputStream is = new FileInputStream(file);
             showContent(is);
-            currentFile = file;
-            updateScreen();
+            if (history.isEmpty() || !history.lastElement().equals(file)) {
+                history.add(file);
+            }
         } catch (IOException e) {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
     private void updateScreen() {
+        if (history.isEmpty()) {
+            showWelcome();
+        } else {
+            showFile(history.lastElement());
+        }
         updateTitle();
         updateEditButton();
     }
 
     private void updateTitle() {
-        if (currentFile == null) {
+        if (history.isEmpty()) {
             setTitle(getString(R.string.app_name));
         } else {
-            String name = currentFile.getName();
+            String name = history.lastElement().getName();
             setTitle(name);
         }
     }
 
     private void updateEditButton() {
         Button button = (Button) findViewById(R.id.button_edit);
-        button.setEnabled(currentFile != null);
+        button.setEnabled(!history.isEmpty());
     }
 
     void openLink(String link) {
-        if (currentFile == null) {
+        if (history.isEmpty()) {
             return;
         }
-        File dir = currentFile.getParentFile();
+        File dir = history.lastElement().getParentFile();
         File target = new File(dir, link);
         showFile(target);
     }
 
     public void onEditButton(View view) {
         Intent intent = new Intent(this, ActivityEditor.class);
-        intent.putExtra(Intent.ACTION_EDIT, currentFile.getAbsolutePath());
+        intent.putExtra(Intent.ACTION_EDIT, history.lastElement().getAbsolutePath());
         startActivity(intent);
+    }
+
+    public void onBackPressed() {
+        if (history.isEmpty()) {
+            super.onBackPressed();
+            return;
+        }
+        history.remove(history.size() - 1);
+        updateScreen();
     }
 }
 
