@@ -24,7 +24,6 @@ import java.io.InputStream;
 
 public class ActivityMain extends Activity {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
-    private static final int REQUEST_ACTION_EDITOR = 21;
 
     private File currentFile;
 
@@ -105,8 +104,6 @@ public class ActivityMain extends Activity {
                 showFile(new File(path));
             }
             break;
-        case REQUEST_ACTION_EDITOR:
-            showFile(currentFile);
         default:
             break;
         }
@@ -140,7 +137,7 @@ public class ActivityMain extends Activity {
     public void onEditButton(View view) {
         Intent intent = new Intent(this, ActivityEditor.class);
         intent.putExtra(Intent.ACTION_EDIT, currentFile.getAbsolutePath());
-        startActivityForResult(intent, REQUEST_ACTION_EDITOR);
+        startActivity(intent);
     }
 }
 
