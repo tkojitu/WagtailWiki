@@ -71,12 +71,12 @@ public class ActivityMain extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         switch (id) {
-            case R.id.menu_open:
-                return onOpen();
-            case R.id.action_settings:
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        case R.id.menu_open:
+            return onOpen();
+        case R.id.action_settings:
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
         }
     }
 
@@ -94,14 +94,14 @@ public class ActivityMain extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
-            case REQUEST_ACTION_GET_CONTENT:
-                if (resultCode == RESULT_OK) {
-                    String path = data.getData().getPath();
-                    showFile(new File(path));
-                }
-                break;
-            default:
-                break;
+        case REQUEST_ACTION_GET_CONTENT:
+            if (resultCode == RESULT_OK) {
+                String path = data.getData().getPath();
+                showFile(new File(path));
+            }
+            break;
+        default:
+            break;
         }
     }
 
