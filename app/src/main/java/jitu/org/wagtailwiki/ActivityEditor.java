@@ -10,6 +10,7 @@ import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -20,13 +21,24 @@ public class ActivityEditor extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
+        updateTitle();
         showText();
     }
 
-    private void showText() {
+    private void updateTitle() {
+        File file = getFile();
+        setTitle(file.getName());
+    }
+
+    private File getFile() {
         String path = getIntent().getStringExtra(Intent.ACTION_EDIT);
+        return new File(path);
+    }
+
+    private void showText() {
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(path));
+            File file = getFile();
+            BufferedReader reader = new BufferedReader(new FileReader(file));
             StringBuilder buf = new StringBuilder();
             int c;
             while ((c = reader.read()) != -1) {

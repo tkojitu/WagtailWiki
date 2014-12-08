@@ -50,7 +50,7 @@ public class ActivityMain extends Activity {
     private void showWelcome() {
         InputStream is = getResources().openRawResource(R.raw.welcome);
         showContent(is);
-        updateEditButton();
+        updateScreen();
     }
 
     private void showContent(InputStream stream) {
@@ -114,9 +114,23 @@ public class ActivityMain extends Activity {
             InputStream is = new FileInputStream(file);
             showContent(is);
             currentFile = file;
-            updateEditButton();
+            updateScreen();
         } catch (IOException e) {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void updateScreen() {
+        updateTitle();
+        updateEditButton();
+    }
+
+    private void updateTitle() {
+        if (currentFile == null) {
+            setTitle(getString(R.string.app_name));
+        } else {
+            String name = currentFile.getName();
+            setTitle(name);
         }
     }
 
