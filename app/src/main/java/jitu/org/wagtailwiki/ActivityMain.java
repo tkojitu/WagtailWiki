@@ -3,6 +3,7 @@ package jitu.org.wagtailwiki;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.SpannedString;
@@ -22,10 +23,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 public class ActivityMain extends Activity {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
+    private static final String PREF_HISTORY = "WagtailWikiHistory";
 
     private Vector<File> history = new Vector<File>();
 
@@ -34,6 +37,30 @@ public class ActivityMain extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         getTextView().setOnTouchListener(new TouchListener(this));
+        loadHistory();
+    }
+
+    private void loadHistory() {
+        SharedPreferences settings = getSharedPreferences(PREF_HISTORY, MODE_PRIVATE);
+        String str = settings.getString(PREF_HISTORY, "");
+        if (str.isEmpty()) {
+            return;
+        }
+        history = stringToHistory(str);
+    }
+
+    private Vector<File> stringToHistory(String str) {
+        Vector<File> hist = new Vector<File>();
+        StringTokenizer tokens = new StringTokenizer(str, "\n");
+        while (tokens.hasMoreTokens()) {
+            String path = tokens.nextToken().trim();
+            if (path.isEmpty()) {
+                continue;
+            }
+            File file = new File(path);
+            hist.add(file);
+        }
+        return hist;
     }
 
     protected void onResume() {
@@ -132,7 +159,28 @@ public class ActivityMain extends Activity {
     private void addFileToHistory(File file) {
         if (history.isEmpty() || !history.lastElement().equals(file)) {
             history.add(file);
+            saveHistory(history);
         }
+    }
+
+    private void saveHistory(Vector<File> history) {
+        String str = historyToString(history);
+        if (str.isEmpty()) {
+            return;
+        }
+        SharedPreferences settings = getSharedPreferences(PREF_HISTORY, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(PREF_HISTORY, str);
+        editor.apply();
+    }
+
+    private String historyToString(Vector<File> hist) {
+        StringBuilder buf = new StringBuilder();
+        for (File file : hist) {
+            buf.append(file.getAbsolutePath());
+            buf.append("\n");
+        }
+        return buf.toString();
     }
 
     private void updateScreen() {
