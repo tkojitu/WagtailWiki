@@ -212,7 +212,7 @@ public class ActivityMain extends Activity {
             return;
         }
         File dir = history.lastElement().getParentFile();
-        File target = new File(dir, link);
+        File target = new File(dir, link.trim());
         showFile(target);
     }
 
