@@ -19,6 +19,7 @@ import com.github.rjeschke.txtmark.Processor;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Vector;
@@ -49,16 +50,17 @@ public class ActivityMain extends Activity {
         showContent(is);
     }
 
-    private void showContent(InputStream stream) {
+    private boolean showContent(InputStream stream) {
         String html;
         try {
             html = Processor.process(stream);
         } catch (IOException e) {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-            return;
+            return false;
         }
         CharSequence seq = Html.fromHtml(html);
         getTextView().setText(seq);
+        return true;
     }
 
     @Override
@@ -108,12 +110,28 @@ public class ActivityMain extends Activity {
     private void showFile(File file) {
         try {
             InputStream is = new FileInputStream(file);
-            showContent(is);
-            if (history.isEmpty() || !history.lastElement().equals(file)) {
-                history.add(file);
+            if (!showContent(is)) {
+                return;
             }
-        } catch (IOException e) {
-            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            addFileToHistory(file);
+        } catch (FileNotFoundException e) {
+            addFileToHistory(file);
+            startEditorActivity();
+        }
+    }
+
+    private void startEditorActivity() {
+        if (history.isEmpty()) {
+            return;
+        }
+        Intent intent = new Intent(this, ActivityEditor.class);
+        intent.putExtra(Intent.ACTION_EDIT, history.lastElement().getAbsolutePath());
+        startActivity(intent);
+    }
+
+    private void addFileToHistory(File file) {
+        if (history.isEmpty() || !history.lastElement().equals(file)) {
+            history.add(file);
         }
     }
 
@@ -151,9 +169,7 @@ public class ActivityMain extends Activity {
     }
 
     public void onEditButton(View view) {
-        Intent intent = new Intent(this, ActivityEditor.class);
-        intent.putExtra(Intent.ACTION_EDIT, history.lastElement().getAbsolutePath());
-        startActivity(intent);
+        startEditorActivity();
     }
 
     public void onBackPressed() {
