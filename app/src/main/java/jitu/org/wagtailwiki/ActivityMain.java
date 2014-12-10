@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.SpannedString;
@@ -211,9 +212,25 @@ public class ActivityMain extends Activity {
         if (history.isEmpty()) {
             return;
         }
+        Uri uri = Uri.parse(link.trim());
+        if (uri.getScheme() == null) {
+            openFile(uri);
+        } else {
+            openWeb(uri);
+        }
+    }
+
+    private void openFile(Uri uri) {
         File dir = history.lastElement().getParentFile();
-        File target = new File(dir, link.trim());
+        File target = new File(dir, uri.getPath());
         showFile(target);
+    }
+
+    private void openWeb(Uri uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        }
     }
 
     public void onEditButton(View view) {
