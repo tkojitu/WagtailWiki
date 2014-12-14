@@ -1,7 +1,7 @@
 package jitu.org.wagtailwiki;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,12 +27,16 @@ public class ActivityEditor extends Activity {
 
     private void updateTitle() {
         File file = getFile();
-        setTitle(file.getName());
+        String title = (file == null) ? "" : file.getName();
+        setTitle(title);
     }
 
     private File getFile() {
-        String path = getIntent().getStringExtra(Intent.ACTION_EDIT);
-        return new File(path);
+        Uri uri = getIntent().getData();
+        if (uri == null) {
+            return null;
+        }
+        return new File(uri.getPath());
     }
 
     private void showText() {
@@ -54,26 +58,32 @@ public class ActivityEditor extends Activity {
     }
 
     public void onBackPressed() {
-        String path = getIntent().getStringExtra(Intent.ACTION_EDIT);
-        BufferedWriter writer = null;
         try {
-            writer = new BufferedWriter(new FileWriter(path));
-            EditText edit = (EditText) findViewById(R.id.edit_text);
-            writer.write(edit.getText().toString());
-        } catch (FileNotFoundException e) {
-            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-        } finally {
-            if (writer != null) {
-                try {
-                    writer.close();
-                } catch (IOException e) {
-                    Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            Uri uri = getIntent().getData();
+            if (uri == null) {
+                return;
+            }
+            BufferedWriter writer = null;
+            try {
+                writer = new BufferedWriter(new FileWriter(uri.getPath()));
+                EditText edit = (EditText) findViewById(R.id.edit_text);
+                writer.write(edit.getText().toString());
+            } catch (FileNotFoundException e) {
+                Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+            } finally {
+                if (writer != null) {
+                    try {
+                        writer.close();
+                    } catch (IOException e) {
+                        Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+                    }
                 }
             }
+        } finally {
+            super.onBackPressed();
         }
-        super.onBackPressed();
     }
 
     @Override

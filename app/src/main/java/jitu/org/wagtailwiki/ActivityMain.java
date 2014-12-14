@@ -22,6 +22,7 @@ import com.github.rjeschke.txtmark.Processor;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
@@ -152,9 +153,34 @@ public class ActivityMain extends Activity {
         if (history.isEmpty()) {
             return;
         }
-        Intent intent = new Intent(this, ActivityEditor.class);
-        intent.putExtra(Intent.ACTION_EDIT, history.lastElement().getAbsolutePath());
+        if (!history.lastElement().exists()) {
+            if (!createEmptyFile(history.lastElement())) {
+                return;
+            }
+        }
+        Intent intent = new Intent(Intent.ACTION_EDIT);
+        Uri uri = Uri.fromFile(history.lastElement());
+        intent.setDataAndType(uri, "text/plain");
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+            return;
+        }
+        intent = new Intent(this, ActivityEditor.class);
+        intent.setDataAndType(uri, "text/plain");
         startActivity(intent);
+    }
+
+    private boolean createEmptyFile(File file) {
+        try {
+            FileOutputStream output = new FileOutputStream(file);
+            output.close();
+            return true;
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            Toast.makeText(this, "fail to close file", Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 
     private void addFileToHistory(File file) {
