@@ -1,4 +1,4 @@
-package jitu.org.wagtailwiki;
+package org.jitu.wagtailwiki;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

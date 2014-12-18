@@ -1,4 +1,4 @@
-package jitu.org.wagtailwiki;
+package org.jitu.wagtailwiki;
 
 import android.app.Activity;
 import android.net.Uri;
