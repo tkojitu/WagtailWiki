@@ -143,6 +143,7 @@ public class ActivityMain extends Activity {
                 return;
             }
             addFileToHistory(file);
+            updateTitle();
         } catch (FileNotFoundException e) {
             addFileToHistory(file);
             startEditorActivity();
