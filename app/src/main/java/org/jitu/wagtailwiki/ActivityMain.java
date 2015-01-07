@@ -22,8 +22,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class ActivityMain extends Activity {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
@@ -45,21 +43,7 @@ public class ActivityMain extends Activity {
         if (str.isEmpty()) {
             return;
         }
-        fileChan.setHistory(stringToHistory(str));
-    }
-
-    private Vector<File> stringToHistory(String str) {
-        Vector<File> hist = new Vector<>();
-        StringTokenizer tokens = new StringTokenizer(str, "\n");
-        while (tokens.hasMoreTokens()) {
-            String path = tokens.nextToken().trim();
-            if (path.isEmpty()) {
-                continue;
-            }
-            File file = new File(path);
-            hist.add(file);
-        }
-        return hist;
+        fileChan.loadHistory(str);
     }
 
     protected void onResume() {
@@ -139,12 +123,19 @@ public class ActivityMain extends Activity {
             if (!showContent(is)) {
                 return;
             }
-            addFileToHistory(file);
+            fileChan.addFileToHistory(file);
             updateTitle();
         } catch (FileNotFoundException e) {
-            addFileToHistory(file);
+            fileChan.addFileToHistory(file);
             startEditorActivity();
         }
+    }
+
+    public void saveHistoryString(String str) {
+        SharedPreferences settings = getSharedPreferences(PREF_HISTORY, MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString(PREF_HISTORY, str);
+        editor.apply();
     }
 
     private void startEditorActivity() {
@@ -180,34 +171,6 @@ public class ActivityMain extends Activity {
             Toast.makeText(this, "fail to close file", Toast.LENGTH_LONG).show();
             return false;
         }
-    }
-
-    private void addFileToHistory(File file) {
-        File last = fileChan.getLastItem();
-        if (last == null || !last.equals(file)) {
-            fileChan.addItem(file);
-            saveHistory(fileChan.getHistory());
-        }
-    }
-
-    private void saveHistory(Vector<File> history) {
-        String str = historyToString(history);
-        if (str.isEmpty()) {
-            return;
-        }
-        SharedPreferences settings = getSharedPreferences(PREF_HISTORY, MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putString(PREF_HISTORY, str);
-        editor.apply();
-    }
-
-    private String historyToString(Vector<File> hist) {
-        StringBuilder buf = new StringBuilder();
-        for (File file : hist) {
-            buf.append(file.getAbsolutePath());
-            buf.append("\n");
-        }
-        return buf.toString();
     }
 
     private void updateScreen() {

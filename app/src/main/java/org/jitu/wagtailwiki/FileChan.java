@@ -1,6 +1,7 @@
 package org.jitu.wagtailwiki;
 
 import java.io.File;
+import java.util.StringTokenizer;
 import java.util.Vector;
 
 public class FileChan {
@@ -9,14 +10,6 @@ public class FileChan {
 
     public FileChan(ActivityMain activity) {
         this.activity = activity;
-    }
-
-    public Vector<File> getHistory() {
-        return history;
-    }
-
-    public void setHistory(Vector<File> arg) {
-        history = arg;
     }
 
     public boolean hasHistory() {
@@ -36,5 +29,44 @@ public class FileChan {
 
     public void removeItem() {
         history.remove(history.size() - 1);
+    }
+
+    public void loadHistory(String str) {
+        if (str == null || str.isEmpty()) {
+            return;
+        }
+        history = stringToHistory(str);
+    }
+
+    private Vector<File> stringToHistory(String str) {
+        Vector<File> hist = new Vector<>();
+        StringTokenizer tokens = new StringTokenizer(str, "\n");
+        while (tokens.hasMoreTokens()) {
+            String path = tokens.nextToken().trim();
+            if (path.isEmpty()) {
+                continue;
+            }
+            File file = new File(path);
+            hist.add(file);
+        }
+        return hist;
+    }
+
+    public void addFileToHistory(File file) {
+        File last = getLastItem();
+        if (last == null || !last.equals(file)) {
+            addItem(file);
+            String str = getHistoryString();
+            activity.saveHistoryString(str);
+        }
+    }
+
+    private String getHistoryString() {
+        StringBuilder buf = new StringBuilder();
+        for (File file : history) {
+            buf.append(file.getAbsolutePath());
+            buf.append("\n");
+        }
+        return buf.toString();
     }
 }
