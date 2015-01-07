@@ -1,7 +1,6 @@
 package org.jitu.wagtailwiki;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -16,14 +15,10 @@ import android.widget.Toast;
 
 import com.github.rjeschke.txtmark.Processor;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class ActivityMain extends Activity {
-    private static final int REQUEST_ACTION_GET_CONTENT = 11;
     private static final String PREF_HISTORY = "WagtailWikiHistory";
 
     private FileChan fileChan = new FileChan(this);
@@ -59,7 +54,7 @@ public class ActivityMain extends Activity {
         showContent(is);
     }
 
-    private boolean showContent(InputStream stream) {
+    public boolean showContent(InputStream stream) {
         String html;
         try {
             html = Processor.process(stream);
@@ -83,7 +78,7 @@ public class ActivityMain extends Activity {
         int id = item.getItemId();
         switch (id) {
         case R.id.menu_open:
-            return onOpen();
+            return fileChan.onOpen();
         case R.id.action_settings:
             return true;
         default:
@@ -91,42 +86,9 @@ public class ActivityMain extends Activity {
         }
     }
 
-    private boolean onOpen() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        try {
-            startActivityForResult(intent, REQUEST_ACTION_GET_CONTENT);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-        }
-        return true;
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-        case REQUEST_ACTION_GET_CONTENT:
-            if (resultCode == RESULT_OK) {
-                String path = data.getData().getPath();
-                showFile(new File(path));
-            }
-            break;
-        default:
-            break;
-        }
-    }
-
-    private void showFile(File file) {
-        fileChan.addPageToHistory(file);
-        InputStream is = fileChan.getInputStream();
-        if (is == null) {
-            startEditorActivity();
-            return;
-        }
-        if (!showContent(is)) {
-            return;
-        }
-        updateTitle();
+        fileChan.onActivityResult(requestCode, resultCode, data);
     }
 
     public void saveHistoryString(String str) {
@@ -134,41 +96,6 @@ public class ActivityMain extends Activity {
         SharedPreferences.Editor editor = settings.edit();
         editor.putString(PREF_HISTORY, str);
         editor.apply();
-    }
-
-    private void startEditorActivity() {
-        File file = fileChan.getLastPage();
-        if (file == null) {
-            return;
-        }
-        if (!file.exists()) {
-            if (!createEmptyFile(file)) {
-                return;
-            }
-        }
-        Intent intent = new Intent(Intent.ACTION_EDIT);
-        Uri uri = Uri.fromFile(file);
-        intent.setDataAndType(uri, "text/plain");
-        if (intent.resolveActivity(getPackageManager()) != null) {
-            startActivity(intent);
-            return;
-        }
-        intent = new Intent(this, ActivityEditor.class);
-        intent.setDataAndType(uri, "text/plain");
-        startActivity(intent);
-    }
-
-    private boolean createEmptyFile(File file) {
-        try {
-            FileOutputStream output = new FileOutputStream(file);
-            output.close();
-            return true;
-        } catch (FileNotFoundException e) {
-            return false;
-        } catch (IOException e) {
-            Toast.makeText(this, "fail to close file", Toast.LENGTH_LONG).show();
-            return false;
-        }
     }
 
     private void updateScreen() {
@@ -182,7 +109,7 @@ public class ActivityMain extends Activity {
         updateEditButton();
     }
 
-    private void updateTitle() {
+    public void updateTitle() {
         String title = fileChan.getPageName();
         if (title.isEmpty()) {
             title = getString(R.string.app_name);
@@ -201,17 +128,10 @@ public class ActivityMain extends Activity {
         }
         Uri uri = Uri.parse(link.trim());
         if (uri.getScheme() == null) {
-            openFile(uri);
+            fileChan.openPage(uri);
         } else {
             openWeb(uri);
         }
-    }
-
-    private void openFile(Uri uri) {
-        File file = fileChan.getLastPage();
-        File dir = file.getParentFile();
-        File target = new File(dir, uri.getPath());
-        showFile(target);
     }
 
     private void openWeb(Uri uri) {
@@ -222,7 +142,7 @@ public class ActivityMain extends Activity {
     }
 
     public void onEditButton(View view) {
-        startEditorActivity();
+        fileChan.startEditorActivity();
     }
 
     public void onBackPressed() {
