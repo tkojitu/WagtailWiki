@@ -22,7 +22,6 @@ import java.io.InputStream;
 public class ActivityMain extends Activity {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
     private static final String PREF_HISTORY = "WagtailWikiHistory";
-
     private StorageChan storage = new FileChan(this);
 
     @Override
@@ -104,12 +103,21 @@ public class ActivityMain extends Activity {
         switch (requestCode) {
         case REQUEST_ACTION_GET_CONTENT:
             if (resultCode == Activity.RESULT_OK) {
-                storage.onActionGetContent(data);
+                onActionGetContent(data);
             }
             break;
         default:
             break;
         }
+    }
+
+    private void onActionGetContent(Intent data) {
+        Uri uri = data.getData();
+        StorageChan stor = StorageChan.getInstance(this, uri);
+        if (stor == null) {
+            return;
+        }
+        storage.onActionGetContent(data);
     }
 
     public void saveHistoryString(String str) {

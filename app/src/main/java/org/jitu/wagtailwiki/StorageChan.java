@@ -2,11 +2,22 @@ package org.jitu.wagtailwiki;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.widget.Toast;
 
 import java.io.InputStream;
 
 public abstract class StorageChan {
+    public static final String EXTERNALSTORAGE = "com.android.externalstorage.documents";
+
     protected ActivityMain activity;
+
+    public static StorageChan getInstance(ActivityMain activity, Uri uri) {
+        if (!EXTERNALSTORAGE.equals(uri.getAuthority())) {
+            return new FileChan(activity);
+        }
+        Toast.makeText(activity, "unknown authority: " + uri.getAuthority(), Toast.LENGTH_LONG).show();
+        return null;
+    }
 
     public StorageChan(ActivityMain activity) {
         this.activity = activity;
