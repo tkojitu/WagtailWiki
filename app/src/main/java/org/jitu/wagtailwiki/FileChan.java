@@ -1,7 +1,5 @@
 package org.jitu.wagtailwiki;
 
-import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.widget.Toast;
@@ -16,8 +14,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 
 public class FileChan extends StorageChan {
-    private static final int REQUEST_ACTION_GET_CONTENT = 11;
-
     private Vector<File> history = new Vector<File>();
 
     public FileChan(ActivityMain activity) {
@@ -102,28 +98,9 @@ public class FileChan extends StorageChan {
         return file.getName();
     }
 
-    public boolean onOpen() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*");
-        try {
-            activity.startActivityForResult(intent, REQUEST_ACTION_GET_CONTENT);
-        } catch (ActivityNotFoundException e) {
-            Toast.makeText(activity, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
-        }
-        return true;
-    }
-
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-        case REQUEST_ACTION_GET_CONTENT:
-            if (resultCode == Activity.RESULT_OK) {
-                String path = data.getData().getPath();
-                showFile(new File(path));
-            }
-            break;
-        default:
-            break;
-        }
+    public void onActionGetContent(Intent data) {
+        String path = data.getData().getPath();
+        showFile(new File(path));
     }
 
     private void showFile(File file) {

@@ -1,6 +1,7 @@
 package org.jitu.wagtailwiki;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ActivityMain extends Activity {
+    private static final int REQUEST_ACTION_GET_CONTENT = 11;
     private static final String PREF_HISTORY = "WagtailWikiHistory";
 
     private StorageChan storage = new FileChan(this);
@@ -78,7 +80,7 @@ public class ActivityMain extends Activity {
         int id = item.getItemId();
         switch (id) {
         case R.id.menu_open:
-            return storage.onOpen();
+            return onOpen();
         case R.id.action_settings:
             return true;
         default:
@@ -86,9 +88,28 @@ public class ActivityMain extends Activity {
         }
     }
 
+    public boolean onOpen() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        try {
+            startActivityForResult(intent, REQUEST_ACTION_GET_CONTENT);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
+        }
+        return true;
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        storage.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+        case REQUEST_ACTION_GET_CONTENT:
+            if (resultCode == Activity.RESULT_OK) {
+                storage.onActionGetContent(data);
+            }
+            break;
+        default:
+            break;
+        }
     }
 
     public void saveHistoryString(String str) {

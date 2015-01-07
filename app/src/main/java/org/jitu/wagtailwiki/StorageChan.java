@@ -13,8 +13,7 @@ public abstract class StorageChan {
     }
 
     public abstract void loadHistory(String str);
-    public abstract boolean onOpen();
-    public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
+    public abstract void onActionGetContent(Intent data);
     public abstract void startEditorActivity();
     public abstract InputStream getInputStream();
     public abstract String getPageName();
