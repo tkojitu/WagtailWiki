@@ -15,14 +15,13 @@ import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
-public class FileChan {
+public class FileChan extends StorageChan {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
 
-    private ActivityMain activity;
     private Vector<File> history = new Vector<File>();
 
     public FileChan(ActivityMain activity) {
-        this.activity = activity;
+        super(activity);
     }
 
     public boolean hasHistory() {

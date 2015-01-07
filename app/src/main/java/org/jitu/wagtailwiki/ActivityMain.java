@@ -21,7 +21,7 @@ import java.io.InputStream;
 public class ActivityMain extends Activity {
     private static final String PREF_HISTORY = "WagtailWikiHistory";
 
-    private FileChan fileChan = new FileChan(this);
+    private StorageChan storage = new FileChan(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,7 +37,7 @@ public class ActivityMain extends Activity {
         if (str.isEmpty()) {
             return;
         }
-        fileChan.loadHistory(str);
+        storage.loadHistory(str);
     }
 
     protected void onResume() {
@@ -78,7 +78,7 @@ public class ActivityMain extends Activity {
         int id = item.getItemId();
         switch (id) {
         case R.id.menu_open:
-            return fileChan.onOpen();
+            return storage.onOpen();
         case R.id.action_settings:
             return true;
         default:
@@ -88,7 +88,7 @@ public class ActivityMain extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        fileChan.onActivityResult(requestCode, resultCode, data);
+        storage.onActivityResult(requestCode, resultCode, data);
     }
 
     public void saveHistoryString(String str) {
@@ -99,7 +99,7 @@ public class ActivityMain extends Activity {
     }
 
     private void updateScreen() {
-        InputStream is = fileChan.getInputStream();
+        InputStream is = storage.getInputStream();
         if (is == null) {
             showWelcome();
         } else {
@@ -110,7 +110,7 @@ public class ActivityMain extends Activity {
     }
 
     public void updateTitle() {
-        String title = fileChan.getPageName();
+        String title = storage.getPageName();
         if (title.isEmpty()) {
             title = getString(R.string.app_name);
         }
@@ -119,16 +119,16 @@ public class ActivityMain extends Activity {
 
     private void updateEditButton() {
         Button button = (Button) findViewById(R.id.button_edit);
-        button.setEnabled(fileChan.hasHistory());
+        button.setEnabled(storage.hasHistory());
     }
 
     void openLink(String link) {
-        if (!fileChan.hasHistory()) {
+        if (!storage.hasHistory()) {
             return;
         }
         Uri uri = Uri.parse(link.trim());
         if (uri.getScheme() == null) {
-            fileChan.openPage(uri);
+            storage.openPage(uri);
         } else {
             openWeb(uri);
         }
@@ -142,15 +142,15 @@ public class ActivityMain extends Activity {
     }
 
     public void onEditButton(View view) {
-        fileChan.startEditorActivity();
+        storage.startEditorActivity();
     }
 
     public void onBackPressed() {
-        if (!fileChan.hasHistory()) {
+        if (!storage.hasHistory()) {
             super.onBackPressed();
             return;
         }
-        fileChan.removePage();
+        storage.removePage();
         updateScreen();
     }
 }
