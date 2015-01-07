@@ -10,132 +10,64 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.StringTokenizer;
-import java.util.Vector;
 
 public class FileChan extends StorageChan {
-    private Vector<File> history = new Vector<File>();
-
     public FileChan(ActivityMain activity) {
         super(activity);
     }
 
-    public boolean hasHistory() {
-        return !history.isEmpty();
+    @Override
+    protected Object deserializePage(String str) {
+        return new File(str);
     }
 
-    private File getLastPage() {
-        if (history.isEmpty()) {
-            return null;
-        }
-        return history.lastElement();
+    protected String serializePage(Object page) {
+        File file = (File) page;
+        return file.getAbsolutePath();
     }
 
-    private void addPage(File file) {
-        history.add(file);
-    }
-
-    public void removePage() {
-        history.remove(history.size() - 1);
-    }
-
-    public void loadHistory(String str) {
-        if (str == null || str.isEmpty()) {
-            return;
-        }
-        history = stringToHistory(str);
-    }
-
-    private Vector<File> stringToHistory(String str) {
-        Vector<File> hist = new Vector<>();
-        StringTokenizer tokens = new StringTokenizer(str, "\n");
-        while (tokens.hasMoreTokens()) {
-            String path = tokens.nextToken().trim();
-            if (path.isEmpty()) {
-                continue;
-            }
-            File file = new File(path);
-            hist.add(file);
-        }
-        return hist;
-    }
-
-    private void addPageToHistory(File file) {
-        File last = getLastPage();
-        if (last == null || !last.equals(file)) {
-            addPage(file);
-            String str = getHistoryString();
-            activity.saveHistoryString(str);
-        }
-    }
-
-    private String getHistoryString() {
-        StringBuilder buf = new StringBuilder();
-        for (File file : history) {
-            buf.append(file.getAbsolutePath());
-            buf.append("\n");
-        }
-        return buf.toString();
-    }
-
+    @Override
     public InputStream getInputStream() {
-        File file = getLastPage();
-        if (file == null) {
+        Object page = getLastPage();
+        if (page == null) {
             return null;
         }
         try {
-            return new FileInputStream(file);
+            return new FileInputStream((File) page);
         } catch (FileNotFoundException e) {
             return null;
         }
     }
 
+    @Override
     public String getPageName() {
-        File file = getLastPage();
-        if (file == null) {
+        Object page = getLastPage();
+        if (page == null) {
             return "";
         }
+        File file = (File) page;
         return file.getName();
     }
 
-    public void onActionGetContent(Intent data) {
+    @Override
+    public Object toPage(Intent data) {
         String path = data.getData().getPath();
-        showFile(new File(path));
+        return new File(path);
     }
 
-    private void showFile(File file) {
-        addPageToHistory(file);
-        InputStream is = getInputStream();
-        if (is == null) {
-            startEditorActivity();
-            return;
+    @Override
+    protected Uri getPageUri() {
+        Object page = getLastPage();
+        if (page == null) {
+            return null;
         }
-        if (!activity.showContent(is)) {
-            return;
-        }
-        activity.updateTitle();
-    }
-
-    public void startEditorActivity() {
-        File file = getLastPage();
-        if (file == null) {
-            return;
-        }
+        File file = (File) page;
         if (!file.exists()) {
             if (!createEmptyFile(file)) {
-                return;
+                return null;
             }
         }
-        Intent intent = new Intent(Intent.ACTION_EDIT);
-        Uri uri = Uri.fromFile(file);
-        intent.setDataAndType(uri, "text/plain");
-        if (intent.resolveActivity(activity.getPackageManager()) != null) {
-            activity.startActivity(intent);
-            return;
-        }
-        intent = new Intent(activity, ActivityEditor.class);
-        intent.setDataAndType(uri, "text/plain");
-        activity.startActivity(intent);
+        return Uri.fromFile(file);
     }
 
     private boolean createEmptyFile(File file) {
@@ -151,10 +83,12 @@ public class FileChan extends StorageChan {
         }
     }
 
+    @Override
     public void openPage(Uri uri) {
-        File file = getLastPage();
+        Object page = getLastPage();
+        File file = (File) page;
         File dir = file.getParentFile();
         File target = new File(dir, uri.getPath());
-        showFile(target);
+        showPage(target);
     }
 }
