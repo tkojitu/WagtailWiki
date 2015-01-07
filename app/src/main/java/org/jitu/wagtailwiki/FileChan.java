@@ -1,6 +1,9 @@
 package org.jitu.wagtailwiki;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.Vector;
 
@@ -68,5 +71,25 @@ public class FileChan {
             buf.append("\n");
         }
         return buf.toString();
+    }
+
+    public InputStream getInputStream() {
+        File file = getLastItem();
+        if (file == null) {
+            return null;
+        }
+        try {
+            return new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            return null;
+        }
+    }
+
+    public String getPageName() {
+        File file = getLastItem();
+        if (file == null) {
+            return "";
+        }
+        return file.getName();
     }
 }

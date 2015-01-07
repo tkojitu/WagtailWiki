@@ -17,7 +17,6 @@ import android.widget.Toast;
 import com.github.rjeschke.txtmark.Processor;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -118,17 +117,16 @@ public class ActivityMain extends Activity {
     }
 
     private void showFile(File file) {
-        try {
-            InputStream is = new FileInputStream(file);
-            if (!showContent(is)) {
-                return;
-            }
-            fileChan.addFileToHistory(file);
-            updateTitle();
-        } catch (FileNotFoundException e) {
-            fileChan.addFileToHistory(file);
+        fileChan.addFileToHistory(file);
+        InputStream is = fileChan.getInputStream();
+        if (is == null) {
             startEditorActivity();
+            return;
         }
+        if (!showContent(is)) {
+            return;
+        }
+        updateTitle();
     }
 
     public void saveHistoryString(String str) {
@@ -174,24 +172,22 @@ public class ActivityMain extends Activity {
     }
 
     private void updateScreen() {
-        File file = fileChan.getLastItem();
-        if (file == null) {
+        InputStream is = fileChan.getInputStream();
+        if (is == null) {
             showWelcome();
         } else {
-            showFile(file);
+            showContent(is);
         }
         updateTitle();
         updateEditButton();
     }
 
     private void updateTitle() {
-        File file = fileChan.getLastItem();
-        if (file == null) {
-            setTitle(getString(R.string.app_name));
-        } else {
-            String name = file.getName();
-            setTitle(name);
+        String title = fileChan.getPageName();
+        if (title.isEmpty()) {
+            title = getString(R.string.app_name);
         }
+        setTitle(title);
     }
 
     private void updateEditButton() {
