@@ -29,7 +29,7 @@ public class ActivityMain extends Activity {
     private static final int REQUEST_ACTION_GET_CONTENT = 11;
     private static final String PREF_HISTORY = "WagtailWikiHistory";
 
-    private Vector<File> history = new Vector<File>();
+    private FileChan fileChan = new FileChan(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,11 +45,11 @@ public class ActivityMain extends Activity {
         if (str.isEmpty()) {
             return;
         }
-        history = stringToHistory(str);
+        fileChan.setHistory(stringToHistory(str));
     }
 
     private Vector<File> stringToHistory(String str) {
-        Vector<File> hist = new Vector<File>();
+        Vector<File> hist = new Vector<>();
         StringTokenizer tokens = new StringTokenizer(str, "\n");
         while (tokens.hasMoreTokens()) {
             String path = tokens.nextToken().trim();
@@ -148,16 +148,17 @@ public class ActivityMain extends Activity {
     }
 
     private void startEditorActivity() {
-        if (history.isEmpty()) {
+        File file = fileChan.getLastItem();
+        if (file == null) {
             return;
         }
-        if (!history.lastElement().exists()) {
-            if (!createEmptyFile(history.lastElement())) {
+        if (!file.exists()) {
+            if (!createEmptyFile(file)) {
                 return;
             }
         }
         Intent intent = new Intent(Intent.ACTION_EDIT);
-        Uri uri = Uri.fromFile(history.lastElement());
+        Uri uri = Uri.fromFile(file);
         intent.setDataAndType(uri, "text/plain");
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
@@ -182,9 +183,10 @@ public class ActivityMain extends Activity {
     }
 
     private void addFileToHistory(File file) {
-        if (history.isEmpty() || !history.lastElement().equals(file)) {
-            history.add(file);
-            saveHistory(history);
+        File last = fileChan.getLastItem();
+        if (last == null || !last.equals(file)) {
+            fileChan.addItem(file);
+            saveHistory(fileChan.getHistory());
         }
     }
 
@@ -209,31 +211,33 @@ public class ActivityMain extends Activity {
     }
 
     private void updateScreen() {
-        if (history.isEmpty()) {
+        File file = fileChan.getLastItem();
+        if (file == null) {
             showWelcome();
         } else {
-            showFile(history.lastElement());
+            showFile(file);
         }
         updateTitle();
         updateEditButton();
     }
 
     private void updateTitle() {
-        if (history.isEmpty()) {
+        File file = fileChan.getLastItem();
+        if (file == null) {
             setTitle(getString(R.string.app_name));
         } else {
-            String name = history.lastElement().getName();
+            String name = file.getName();
             setTitle(name);
         }
     }
 
     private void updateEditButton() {
         Button button = (Button) findViewById(R.id.button_edit);
-        button.setEnabled(!history.isEmpty());
+        button.setEnabled(fileChan.hasHistory());
     }
 
     void openLink(String link) {
-        if (history.isEmpty()) {
+        if (!fileChan.hasHistory()) {
             return;
         }
         Uri uri = Uri.parse(link.trim());
@@ -245,7 +249,8 @@ public class ActivityMain extends Activity {
     }
 
     private void openFile(Uri uri) {
-        File dir = history.lastElement().getParentFile();
+        File file = fileChan.getLastItem();
+        File dir = file.getParentFile();
         File target = new File(dir, uri.getPath());
         showFile(target);
     }
@@ -262,11 +267,11 @@ public class ActivityMain extends Activity {
     }
 
     public void onBackPressed() {
-        if (history.isEmpty()) {
+        if (!fileChan.hasHistory()) {
             super.onBackPressed();
             return;
         }
-        history.remove(history.size() - 1);
+        fileChan.removeItem();
         updateScreen();
     }
 }
