@@ -93,7 +93,7 @@ public class ActivityMain extends Activity {
 
     private boolean onOpen() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("file/*");
+        intent.setType("*/*");
         try {
             startActivityForResult(intent, REQUEST_ACTION_GET_CONTENT);
         } catch (ActivityNotFoundException e) {
@@ -117,7 +117,7 @@ public class ActivityMain extends Activity {
     }
 
     private void showFile(File file) {
-        fileChan.addFileToHistory(file);
+        fileChan.addPageToHistory(file);
         InputStream is = fileChan.getInputStream();
         if (is == null) {
             startEditorActivity();
@@ -137,7 +137,7 @@ public class ActivityMain extends Activity {
     }
 
     private void startEditorActivity() {
-        File file = fileChan.getLastItem();
+        File file = fileChan.getLastPage();
         if (file == null) {
             return;
         }
@@ -208,7 +208,7 @@ public class ActivityMain extends Activity {
     }
 
     private void openFile(Uri uri) {
-        File file = fileChan.getLastItem();
+        File file = fileChan.getLastPage();
         File dir = file.getParentFile();
         File target = new File(dir, uri.getPath());
         showFile(target);
@@ -230,7 +230,7 @@ public class ActivityMain extends Activity {
             super.onBackPressed();
             return;
         }
-        fileChan.removeItem();
+        fileChan.removePage();
         updateScreen();
     }
 }

@@ -19,18 +19,18 @@ public class FileChan {
         return !history.isEmpty();
     }
 
-    public File getLastItem() {
+    public File getLastPage() {
         if (history.isEmpty()) {
             return null;
         }
         return history.lastElement();
     }
 
-    public void addItem(File file) {
+    public void addPage(File file) {
         history.add(file);
     }
 
-    public void removeItem() {
+    public void removePage() {
         history.remove(history.size() - 1);
     }
 
@@ -55,10 +55,10 @@ public class FileChan {
         return hist;
     }
 
-    public void addFileToHistory(File file) {
-        File last = getLastItem();
+    public void addPageToHistory(File file) {
+        File last = getLastPage();
         if (last == null || !last.equals(file)) {
-            addItem(file);
+            addPage(file);
             String str = getHistoryString();
             activity.saveHistoryString(str);
         }
@@ -74,7 +74,7 @@ public class FileChan {
     }
 
     public InputStream getInputStream() {
-        File file = getLastItem();
+        File file = getLastPage();
         if (file == null) {
             return null;
         }
@@ -86,7 +86,7 @@ public class FileChan {
     }
 
     public String getPageName() {
-        File file = getLastItem();
+        File file = getLastPage();
         if (file == null) {
             return "";
         }
