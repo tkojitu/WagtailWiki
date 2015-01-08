@@ -28,12 +28,12 @@ public class FileChan extends StorageChan {
 
     @Override
     public InputStream getInputStream() {
-        Object page = getLastPage();
-        if (page == null) {
+        File file = (File) getLastPage();
+        if (file == null) {
             return null;
         }
         try {
-            return new FileInputStream((File) page);
+            return new FileInputStream(file);
         } catch (FileNotFoundException e) {
             return null;
         }
@@ -41,11 +41,10 @@ public class FileChan extends StorageChan {
 
     @Override
     public String getPageName() {
-        Object page = getLastPage();
-        if (page == null) {
+        File file = (File) getLastPage();
+        if (file == null) {
             return "";
         }
-        File file = (File) page;
         return file.getName();
     }
 
@@ -57,11 +56,10 @@ public class FileChan extends StorageChan {
 
     @Override
     protected Uri getPageUri() {
-        Object page = getLastPage();
-        if (page == null) {
+        File file = (File) getLastPage();
+        if (file == null) {
             return null;
         }
-        File file = (File) page;
         if (!file.exists()) {
             if (!createEmptyFile(file)) {
                 return null;
@@ -85,8 +83,7 @@ public class FileChan extends StorageChan {
 
     @Override
     public void openPage(Uri uri) {
-        Object page = getLastPage();
-        File file = (File) page;
+        File file = (File) getLastPage();
         File dir = file.getParentFile();
         File target = new File(dir, uri.getPath());
         showPage(target);
