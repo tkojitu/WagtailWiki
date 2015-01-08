@@ -117,6 +117,7 @@ public class ActivityMain extends Activity {
         if (stor == null) {
             return;
         }
+        storage = stor;
         storage.onActionGetContent(data);
     }
 

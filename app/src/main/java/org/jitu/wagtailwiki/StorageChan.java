@@ -4,6 +4,10 @@ import android.content.Intent;
 import android.net.Uri;
 import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.StringTokenizer;
 import java.util.Vector;
@@ -15,11 +19,12 @@ public abstract class StorageChan {
     protected Vector history = new Vector();
 
     public static StorageChan getInstance(ActivityMain activity, Uri uri) {
-        if (!EXTERNALSTORAGE.equals(uri.getAuthority())) {
+        String auth = uri.getAuthority();
+        if (EXTERNALSTORAGE.equals(auth)) {
+            return new SafChan(activity);
+        } else {
             return new FileChan(activity);
         }
-        Toast.makeText(activity, "unknown authority: " + uri.getAuthority(), Toast.LENGTH_LONG).show();
-        return null;
     }
 
     public StorageChan(ActivityMain activity) {
@@ -122,5 +127,18 @@ public abstract class StorageChan {
         intent = new Intent(activity, ActivityEditor.class);
         intent.setDataAndType(uri, "text/plain");
         activity.startActivity(intent);
+    }
+
+    protected boolean createEmptyFile(File file) {
+        try {
+            FileOutputStream output = new FileOutputStream(file);
+            output.close();
+            return true;
+        } catch (FileNotFoundException e) {
+            return false;
+        } catch (IOException e) {
+            Toast.makeText(activity, "fail to close file", Toast.LENGTH_LONG).show();
+            return false;
+        }
     }
 }
