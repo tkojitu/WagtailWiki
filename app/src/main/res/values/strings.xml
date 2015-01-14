@@ -2,10 +2,9 @@
 <resources>
 
     <string name="app_name">WagtailWiki</string>
-    <string name="open">Open…</string>
+    <string name="open">Open</string>
     <string name="edit">Edit</string>
     <string name="action_settings">Settings</string>
     <string name="title_activity_activity_editor">WagtailWikiEditor</string>
-    <string name="hello_world">Hello world!</string>
 
 </resources>
